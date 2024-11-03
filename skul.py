@@ -104,17 +104,43 @@ class Run:
 class Jump:
     @staticmethod
     def enter(skul, e):
-        skul.jump_time = get_time()
-        pass
+        skul.jump_velocity = 15  # 초기 점프 속도
+        skul.gravity = -0.3  # 중력 가속도
+        skul.is_jumping = True
+        skul.frame = 0  # 점프 애니메이션 초기화
+
     @staticmethod
     def exit(skul, e):
-        pass
+        skul.is_jumping = False  # 점프 종료 상태
+
     @staticmethod
     def do(skul):
-        pass
+        # 속도 계산 및 위치 변경
+        skul.jump_velocity += skul.gravity * game_framework.frame_time * 50  # 프레임 시간 기반 속도 변화
+        skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
+        # 지면 충돌 처리
+        if skul.y < 90:
+            skul.y = 90
+            skul.state_machine.add_event(('TIME_OUT', 0))
+
+        # 애니메이션 프레임 처리
+        skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
+
     @staticmethod
     def draw(skul):
-        pass
+
+        jump_frames = [
+            (5, 1111, 21, 36),
+            (31, 1111, 22, 36)
+        ]
+
+        frame_index = int(skul.frame)
+        x, y, w, h = jump_frames[frame_index]
+
+        if skul.face_dir == 1:
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+        else:
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
 
 class Fall:
@@ -137,7 +163,6 @@ class Skul:
         self.ball = None
         self.x, self.y = 400, 90
         self.face_dir = 1
-        self.ball_count = 10
         self.image = load_image('기본 해골 스프라이트.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start(Idle)
@@ -145,7 +170,7 @@ class Skul:
             {
                 Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump},
                 Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump},
-                Jump: {time_out: Fall},
+                Jump: {time_out: Idle},
                 Fall: {time_out: Idle}
             }
         )
