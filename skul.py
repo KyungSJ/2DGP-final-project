@@ -5,7 +5,8 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDL
 
 import game_world
 import game_framework
-from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out
+from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
+    c_down
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -40,7 +41,6 @@ class Idle:
     @staticmethod
     def do(skul):
         skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
-        # boy.frame = (boy.frame + 1) % 4
 
     @staticmethod
     def draw(skul):
@@ -74,18 +74,12 @@ class Run:
     @staticmethod
     def exit(skul, e):
         pass
-
-
     @staticmethod
     def do(skul):
-        # boy.frame = (boy.frame + 1) % 8
-        # boy.x += boy.dir * 5
-
         skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
         skul.x += skul.dir * RUN_SPEED_PPS * game_framework.frame_time
         pass
-
     @staticmethod
     def draw(skul):
         run_frames = [
@@ -107,9 +101,35 @@ class Run:
         else:
             skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
+class Jump:
+    @staticmethod
+    def enter(skul, e):
+        skul.jump_time = get_time()
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        pass
+    @staticmethod
+    def draw(skul):
+        pass
 
 
-
+class Fall:
+    @staticmethod
+    def enter(skul, e):
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        pass
+    @staticmethod
+    def draw(skul):
+        pass
 
 class Skul:
 
@@ -123,8 +143,10 @@ class Skul:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run},
-                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle},
+                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump},
+                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump},
+                Jump: {time_out: Fall},
+                Fall: {time_out: Idle}
             }
         )
 
