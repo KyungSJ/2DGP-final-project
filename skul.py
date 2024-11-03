@@ -159,16 +159,51 @@ class Jump:
 class Attack:
     @staticmethod
     def enter(skul, e):
-        pass
+        skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
+        skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
+
     @staticmethod
     def exit(skul, e):
         pass
+
     @staticmethod
     def do(skul):
-        pass
+        # 공격 애니메이션 진행
+        skul.attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+
+        # 공격 애니메이션이 끝나면 Idle 상태로 전환
+        if int(skul.attack_frame) >= 5:  # 5프레임 이후 상태 전환
+            skul.state_machine.add_event(('TIME_OUT', 0))
+
     @staticmethod
     def draw(skul):
-        pass
+        # 첫 번째 애니메이션 프레임
+        attack1_frames = [
+            (5, 950, 34, 46),
+            (44, 951, 35, 45),
+            (84, 939, 63, 57),
+            (152, 956, 61, 40),
+            (218, 961, 41, 35),
+        ]
+        # 두 번째 애니메이션 프레임
+        attack2_frames = [
+            (5, 893, 35, 33),
+            (45, 867, 62, 59),
+            (112, 874, 59, 52),
+            (176, 882, 32, 44),
+        ]
+
+        # 현재 사용하는 프레임 세트 선택
+        frames = attack1_frames if skul.attack_animation_set == 0 else attack2_frames
+        frame_index = int(skul.attack_frame) % len(frames)
+
+        x, y, w, h = frames[frame_index]
+
+        if skul.face_dir == 1:
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+        else:
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+
 
 
 class Skul:
@@ -177,6 +212,7 @@ class Skul:
         self.ball = None
         self.x, self.y = 400, 90
         self.face_dir = 1
+        self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
         self.image = load_image('기본 해골 스프라이트.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start(Idle)
