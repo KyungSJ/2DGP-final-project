@@ -6,7 +6,7 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDL
 import game_world
 import game_framework
 from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
-    c_down
+    c_down, x_down
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -104,8 +104,8 @@ class Run:
 class Jump:
     @staticmethod
     def enter(skul, e):
-        skul.jump_velocity = 15  # 초기 점프 속도
-        skul.gravity = -0.3  # 중력 가속도
+        skul.jump_velocity = 10  # 초기 점프 속도
+        skul.gravity = -0.4  # 중력 가속도
         skul.is_jumping = True
         skul.frame = 0  # 점프 애니메이션 초기화
 
@@ -119,6 +119,7 @@ class Jump:
         skul.jump_velocity += skul.gravity * game_framework.frame_time * 50  # 프레임 시간 기반 속도 변화
         skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
         # 지면 충돌 처리
+
         if skul.y < 90:
             skul.y = 90
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -128,22 +129,34 @@ class Jump:
 
     @staticmethod
     def draw(skul):
+        if skul.jump_velocity > 0:
+            jump_frames = [
+                (5, 1111, 21, 36),
+                (31, 1111, 22, 36)
+            ]
 
-        jump_frames = [
-            (5, 1111, 21, 36),
-            (31, 1111, 22, 36)
-        ]
+            frame_index = int(skul.frame)
+            x, y, w, h = jump_frames[frame_index]
 
-        frame_index = int(skul.frame)
-        x, y, w, h = jump_frames[frame_index]
-
-        if skul.face_dir == 1:
-            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            if skul.face_dir == 1:
+                skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            else:
+                skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
         else:
-            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+            jump_frames = [
+                (5, 1062, 34, 36),
+                (44, 1063, 34, 35)
+            ]
 
+            frame_index = int(skul.frame)
+            x, y, w, h = jump_frames[frame_index]
 
-class Fall:
+            if skul.face_dir == 1:
+                skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            else:
+                skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+
+class Attack:
     @staticmethod
     def enter(skul, e):
         pass
@@ -157,6 +170,7 @@ class Fall:
     def draw(skul):
         pass
 
+
 class Skul:
 
     def __init__(self):
@@ -168,10 +182,10 @@ class Skul:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump},
-                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump},
+                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack},
+                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump, x_down: Attack},
                 Jump: {time_out: Idle},
-                Fall: {time_out: Idle}
+                Attack: {time_out: Idle},
             }
         )
 
