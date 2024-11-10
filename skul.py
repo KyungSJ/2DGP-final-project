@@ -264,6 +264,34 @@ class Dash:
             skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
         pass
 
+class Jump_Dash:
+    @staticmethod
+    def enter(skul, e):
+        skul.init_x = skul.x
+        pass
+
+    @staticmethod
+    def exit(skul, e):
+        pass
+
+    @staticmethod
+    def do(skul):
+        skul.x += skul.face_dir * 1
+        if (skul.x - skul.init_x) * skul.face_dir == 84:
+            if skul.jump_velocity > 0:
+                skul.jump_velocity = skul.jump_velocity * -1
+            skul.state_machine.add_event(('TIME_OUT', 0))
+        pass
+
+    @staticmethod
+    def draw(skul):
+        if skul.face_dir == 1:
+            skul.image.clip_draw(5, 1160, 42, 28, skul.x, skul.y, 42 * 2, 28 * 2)
+        else:
+            skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
+        pass
+
+
 class Skul:
     def __init__(self):
         self.jump_velocity = 10  # 초기 점프 속도
@@ -280,10 +308,11 @@ class Skul:
             {
                 Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash},
                 Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump, x_down: Attack, z_down: Dash},
-                Jump: {time_out: Idle, x_down: Jump_attack},
+                Jump: {time_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
                 Attack: {time_out: Idle},
                 Jump_attack: {time_out: Jump},
-                Dash: {time_out: Idle}
+                Dash: {time_out: Idle},
+                Jump_Dash: {time_out: Jump}
             }
         )
 
