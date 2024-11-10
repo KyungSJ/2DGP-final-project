@@ -6,7 +6,7 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDL
 import game_world
 import game_framework
 from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
-    c_down, x_down
+    c_down, x_down, z_down
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -208,6 +208,7 @@ class Jump_attack:
     def enter(skul, e):
         skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
 
+
     @staticmethod
     def exit(skul, e):
         pass
@@ -241,7 +242,27 @@ class Jump_attack:
         else:
             skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
-
+class Dash:
+    @staticmethod
+    def enter(skul, e):
+        skul.init_x = skul.x
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        skul.x += skul.face_dir * 1
+        if (skul.x - skul.init_x) * skul.face_dir == 84:
+            skul.state_machine.add_event(('TIME_OUT', 0))
+        pass
+    @staticmethod
+    def draw(skul):
+        if skul.face_dir == 1:
+            skul.image.clip_draw(5, 1160, 42, 28, skul.x, skul.y, 42 * 2, 28 * 2)
+        else:
+            skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
+        pass
 
 class Skul:
     def __init__(self):
@@ -257,11 +278,12 @@ class Skul:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack},
-                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump, x_down: Attack},
+                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash},
+                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump, x_down: Attack, z_down: Dash},
                 Jump: {time_out: Idle, x_down: Jump_attack},
                 Attack: {time_out: Idle},
-                Jump_attack: {time_out: Jump}
+                Jump_attack: {time_out: Jump},
+                Dash: {time_out: Idle}
             }
         )
 
