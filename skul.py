@@ -26,10 +26,7 @@ class Idle:
     def enter(skul, e):
         if start_event(e):
             skul.face_dir = 1
-        elif right_down(e) or left_up(e):
-            skul.face_dir = -1
-        elif left_down(e) or right_up(e):
-            skul.face_dir = 1
+
 
         skul.frame = 0
         skul.wait_time = get_time()
