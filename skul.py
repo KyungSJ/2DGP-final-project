@@ -67,9 +67,9 @@ class Run:
     @staticmethod
     def enter(skul, e):
         if right_down(e) or left_up(e): # 오른쪽으로 RUN
-            skul.dir, skul.face_dir, skul.action = 1, 1, 1
+            skul.dir, skul.face_dir = 1, 1
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
-            skul.dir, skul.face_dir, skul.action = -1, -1, 0
+            skul.dir, skul.face_dir = -1, -1
 
     @staticmethod
     def exit(skul, e):
@@ -78,7 +78,7 @@ class Run:
     def do(skul):
         skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
-        skul.x += skul.dir * RUN_SPEED_PPS * game_framework.frame_time
+        skul.x += skul.face_dir * RUN_SPEED_PPS * game_framework.frame_time
         pass
     @staticmethod
     def draw(skul):
@@ -125,7 +125,6 @@ class Jump:
 
         # 애니메이션 프레임 처리
         skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
-
     @staticmethod
     def draw(skul):
         if skul.jump_velocity > 0:
@@ -176,6 +175,7 @@ class Attack:
 
     @staticmethod
     def draw(skul):
+        draw_rectangle(*skul.get_attack_bb())
         # 첫 번째 애니메이션 프레임
         attack1_frames = [
             (5, 950, 34, 46),
@@ -203,6 +203,57 @@ class Attack:
         else:
             skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
+
+class Run_attack:
+    @staticmethod
+    def enter(skul, e):
+        skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
+        skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
+
+    @staticmethod
+    def exit(skul, e):
+        pass
+
+    @staticmethod
+    def do(skul):
+        # 공격 애니메이션 진행
+        skul.attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+
+        # 공격 애니메이션이 끝나면 Idle 상태로 전환
+        if int(skul.attack_frame) >= 5:  # 5프레임 이후 상태 전환
+            skul.state_machine.add_event(('TIME_OUT', 0))
+
+    @staticmethod
+    def draw(skul):
+        draw_rectangle(*skul.get_attack_bb())
+        # 첫 번째 애니메이션 프레임
+        attack1_frames = [
+            (5, 950, 34, 46),
+            (44, 951, 35, 45),
+            (84, 939, 63, 57),
+            (152, 956, 61, 40),
+            (218, 961, 41, 35),
+        ]
+        # 두 번째 애니메이션 프레임
+        attack2_frames = [
+            (5, 893, 35, 33),
+            (45, 867, 62, 59),
+            (112, 874, 59, 52),
+            (176, 882, 32, 44),
+        ]
+
+        # 현재 사용하는 프레임 세트 선택
+        frames = attack1_frames if skul.attack_animation_set == 0 else attack2_frames
+        frame_index = int(skul.attack_frame) % len(frames)
+
+        x, y, w, h = frames[frame_index]
+
+        if skul.face_dir == 1:
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+        else:
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+
+
 class Jump_attack:
     @staticmethod
     def enter(skul, e):
@@ -227,6 +278,7 @@ class Jump_attack:
     @staticmethod
     def draw(skul):
         # 점프 공격 애니메이션 프레임
+        draw_rectangle(*skul.get_attack_bb())
         jump_attack_frames = [
             (5, 812, 33, 42),
             (43, 797, 61, 57),
@@ -242,6 +294,47 @@ class Jump_attack:
         else:
             skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
+
+class Jump_move_attack:
+    @staticmethod
+    def enter(skul, e):
+        skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
+
+    @staticmethod
+    def exit(skul, e):
+        pass
+
+    @staticmethod
+    def do(skul):
+        # 애니메이션 프레임 진행
+        skul.jump_attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+
+        # 애니메이션이 끝나면 Idle 상태로 전환
+        if int(skul.jump_attack_frame) >= 4:  # 4프레임 이후 상태 전환
+            if skul.jump_velocity > 0:
+                skul.jump_velocity = skul.jump_velocity * -1
+            skul.state_machine.add_event(('TIME_OUT', 0))
+
+    @staticmethod
+    def draw(skul):
+        # 점프 공격 애니메이션 프레임
+        draw_rectangle(*skul.get_attack_bb())
+        jump_attack_frames = [
+            (5, 812, 33, 42),
+            (43, 797, 61, 57),
+            (109, 810, 57, 44),
+            (171, 817, 33, 37),
+        ]
+
+        frame_index = int(skul.jump_attack_frame) % len(jump_attack_frames)
+        x, y, w, h = jump_attack_frames[frame_index]
+
+        if skul.face_dir == 1:
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+        else:
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+
+
 class Dash:
     @staticmethod
     def enter(skul, e):
@@ -253,7 +346,29 @@ class Dash:
     @staticmethod
     def do(skul):
         skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir == 84:
+        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+            skul.state_machine.add_event(('TIME_OUT', 0))
+        pass
+    @staticmethod
+    def draw(skul):
+        if skul.face_dir == 1:
+            skul.image.clip_draw(5, 1160, 42, 28, skul.x, skul.y, 42 * 2, 28 * 2)
+        else:
+            skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
+        pass
+
+class Run_dash:
+    @staticmethod
+    def enter(skul, e):
+        skul.init_x = skul.x
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        skul.x += skul.face_dir * 1
+        if (skul.x - skul.init_x) * skul.face_dir >= 84:
             skul.state_machine.add_event(('TIME_OUT', 0))
         pass
     @staticmethod
@@ -277,7 +392,33 @@ class Jump_Dash:
     @staticmethod
     def do(skul):
         skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir == 84:
+        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+            if skul.jump_velocity > 0:
+                skul.jump_velocity = skul.jump_velocity * -1
+            skul.state_machine.add_event(('TIME_OUT', 0))
+        pass
+
+    @staticmethod
+    def draw(skul):
+        if skul.face_dir == 1:
+            skul.image.clip_draw(5, 1160, 42, 28, skul.x, skul.y, 42 * 2, 28 * 2)
+        else:
+            skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
+        pass
+class Jump_move_dash:
+    @staticmethod
+    def enter(skul, e):
+        skul.init_x = skul.x
+        pass
+
+    @staticmethod
+    def exit(skul, e):
+        pass
+
+    @staticmethod
+    def do(skul):
+        skul.x += skul.face_dir * 1
+        if (skul.x - skul.init_x) * skul.face_dir >= 84:
             if skul.jump_velocity > 0:
                 skul.jump_velocity = skul.jump_velocity * -1
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -291,6 +432,63 @@ class Jump_Dash:
             skul.image.clip_composite_draw(5, 1160, 42, 28, 0, 'h', skul.x, skul.y, 42 * 2, 28 * 2)
         pass
 
+class Air_move:
+    @staticmethod
+    def enter(skul, e):
+        if right_down(e) or left_up(e): # 오른쪽으로 MOVE
+            skul.face_dir = 1
+        elif left_down(e) or right_up(e): # 왼쪽으로 MOVE
+            skul.face_dir = -1
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        # 속도 계산 및 위치 변경
+        skul.jump_velocity += skul.gravity * game_framework.frame_time * 50  # 프레임 시간 기반 속도 변화
+        skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
+        # 지면 충돌 처리
+
+        if skul.y < 90:
+            skul.y = 90
+            skul.jump_velocity = 10  # 초기 점프 속도
+            skul.jump_frame = 0
+            skul.state_machine.add_event(('TIME_OUT', 0))
+
+        # 애니메이션 프레임 처리
+        skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
+
+        skul.x += skul.face_dir * RUN_SPEED_PPS * game_framework.frame_time
+        pass
+    @staticmethod
+    def draw(skul):
+        if skul.jump_velocity > 0:
+            jump_frames = [
+                (5, 1111, 21, 36),
+                (31, 1111, 22, 36)
+            ]
+
+            frame_index = int(skul.jump_frame)
+            x, y, w, h = jump_frames[frame_index]
+
+            if skul.face_dir == 1:
+                skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            else:
+                skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+        else:
+            jump_frames = [
+                (5, 1062, 34, 36),
+                (44, 1063, 34, 35)
+            ]
+
+            frame_index = int(skul.jump_frame)
+            x, y, w, h = jump_frames[frame_index]
+
+            if skul.face_dir == 1:
+                skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            else:
+                skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
 class Skul:
     def __init__(self):
@@ -307,12 +505,17 @@ class Skul:
         self.state_machine.set_transitions(
             {
                 Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash},
-                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Jump, x_down: Attack, z_down: Dash},
-                Jump: {time_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
+                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Air_move, x_down: Run_attack, z_down: Run_dash},
+                Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, time_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
+                Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, time_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack},
                 Attack: {time_out: Idle},
+                Run_attack: {time_out: Run},
                 Jump_attack: {time_out: Jump},
+                Jump_move_attack: {time_out: Air_move},
                 Dash: {time_out: Idle},
-                Jump_Dash: {time_out: Jump}
+                Run_dash: {time_out: Run},
+                Jump_Dash: {time_out: Jump},
+                Jump_move_dash: {time_out: Air_move}
             }
         )
 
@@ -336,6 +539,11 @@ class Skul:
         else:
             return  self.x-24, self.y-36, self.x+40, self.y+36
 
+    def get_attack_bb(self):
+        if self.face_dir == 1:
+            return self.x-40, self.y-55, self.x+58, self.y+55
+        else:
+            return self.x-58, self.y-55, self.x+40, self.y+55
 
     def handle_collision(self, group, other):
         # fill here
