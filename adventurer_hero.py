@@ -10,7 +10,7 @@ from EnergyBall import EnergyBall
 from behavior_tree import BehaviorTree, Condition, Sequence, Action, Selector
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
-RUN_SPEED_KMPH = 50.0  # Km / Hour
+RUN_SPEED_KMPH = 500.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -23,7 +23,7 @@ WALK_FRAMES_PER_ACTION = 5.0
 ATTACK_FRAMES_PER_ACTION = 10.0
 INTRO_FRAMES_PER_ACTION = 10.0
 ENERGYBALL_FRAMES_PER_ACTION = 15.0
-EXPLOSION_LOOP_FRAMES_PER_ACTION = 15.0
+EXPLOSION_LOOP_FRAMES_PER_ACTION = 3.0
 
 animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall', 'Explosion_Loop']
 
@@ -59,7 +59,7 @@ class Adventurer_hero:
         self.frame = 0
         self.state = "Idle"
         self.intro = False
-        self.random = 2
+        self.random = 3
 
         self.build_behavior_tree()
 
@@ -112,9 +112,15 @@ class Adventurer_hero:
 
     def draw(self):
         if math.cos(self.dir) < 0:
-            Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 72 * 2, 62 * 2)
+            if self.state == 'Explosion_Loop':
+                Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y + 54, 72 * 2, 116 * 2)
+            else:
+                Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 72 * 2, 62 * 2)
         else:
-            Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y, 72 * 2, 62 * 2)
+            if self.state == 'Explosion_Loop':
+                Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y + 54, 72 * 2, 116 * 2)
+            else:
+                Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y, 72 * 2, 62 * 2)
         #draw_rectangle(*self.get_bb())
         pass
 
@@ -155,7 +161,7 @@ class Adventurer_hero:
     def move_to_skul(self, r=0.5):
         self.state = 'Walk'
         self.move_slightly_to(play_mode.skul.x, play_mode.skul.y)
-        if self.distance_less_than(play_mode.skul.x, play_mode.skul.y, self.x, self.y, r):
+        if self.x - play_mode.skul.x < -100 or self.x - play_mode.skul.x > 100:
             return BehaviorTree.SUCCESS
         else:
             self.frame = 0
@@ -204,8 +210,9 @@ class Adventurer_hero:
         pass
 
     def do_Energy_blast(self):
-        if self.state != 'EnergyBlast':
-            self.state = 'EnergyBlast'
+        if self.state != 'Explosion_Loop':
+
+            self.state = 'Explosion_Loop'
             self.frame = 0
         pass
 
@@ -235,7 +242,9 @@ class Adventurer_hero:
         c5 = Condition('랜덤값이 3 인가?', self.is_random3)
         a5 = Action('기폭발', self.do_Energy_blast)
 
-        root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul)
+        root = EnergyBlast_to_skul = Sequence('스컬에게 기폭발', c5, a5)
+
+        root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul, EnergyBlast_to_skul)
 
         self.bt = BehaviorTree(root)
         pass
