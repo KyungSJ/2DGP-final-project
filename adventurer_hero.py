@@ -54,7 +54,7 @@ class Adventurer_hero:
         self.frame = 0
         self.state = "Idle"
         self.intro = False
-        self.random = 1
+        self.random = 2
 
         self.build_behavior_tree()
 
@@ -83,16 +83,19 @@ class Adventurer_hero:
             self.frame = (self.frame + WALK_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % WALK_FRAMES_PER_ACTION
         elif self.state == 'Attack':
             self.frame += ATTACK_FRAMES_PER_ACTION * (ACTION_PER_TIME / 2.0) * game_framework.frame_time
+            if int(self.frame) == 11 or int(self.frame) == 17 or int(self.frame) == 22:
+                self.dir = math.atan2(play_mode.skul.y - self.y, play_mode.skul.x - self.x)
+                self.x += 3 * math.cos(self.dir)
             if int(self.frame) >= 35:
                 self.state = 'Idle'
                 self.frame = 0
-                self.random = random.randint(1, 3)
+                self.random = random.randint(1, 4)
         elif self.state == 'EnergyBall':
             self.frame += ENERGYBALL_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
             if int(self.frame) >= 15:
                 self.state = 'Idle'
                 self.frame = 0
-                self.random = random.randint(1, 3)
+                self.random = random.randint(1, 4)
         self.bt.run()
 
 
@@ -125,11 +128,18 @@ class Adventurer_hero:
         else:
             return BehaviorTree.SUCCESS
 
-    def is_skul_nearby(self, r):
+    def is_not_skul_nearby(self, r):
         if self.distance_less_than(play_mode.skul.x, play_mode.skul.y, self.x, self.y, r):
             return BehaviorTree.FAIL
         else:
             return BehaviorTree.SUCCESS
+
+    def is_skul_nearby(self, r):
+        if self.distance_less_than(play_mode.skul.x, play_mode.skul.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
 
     def move_to_skul(self, r=0.5):
         self.state = 'Walk'
@@ -137,6 +147,8 @@ class Adventurer_hero:
         if self.distance_less_than(play_mode.skul.x, play_mode.skul.y, self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
+            self.frame = 0
+            self.random = random.randint(1, 4)
             return BehaviorTree.FAIL
 
     def do_Intro(self):
@@ -159,6 +171,18 @@ class Adventurer_hero:
         else:
             return BehaviorTree.FAIL
 
+    def is_random3(self):
+        if self.random == 3:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+    def is_random4(self):
+        if self.random == 4:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
     def Energy_ball(self):
         if self.state != 'EnergyBall':  # 중복 실행 방지
             self.state = 'EnergyBall'
@@ -167,13 +191,17 @@ class Adventurer_hero:
         #energyball = EnergyBall(self.x, self.y, self.dir*10)
         pass
 
+    def random_value_4(self):
+        self.random = 4
+        return BehaviorTree.FAIL
+
     def build_behavior_tree(self):
         c1 = Condition('Intro를 안했는가?', self.is_Intro_do)
         a1 = Action('Intro 하기', self.do_Intro)
 
         root = is_do_intro = Sequence('Intro 하기', c1, a1)
 
-        c2 = Condition('스컬이 근처에 없는가?', self.is_skul_nearby, 4)
+        c2 = Condition('랜덤값이 4 인가?', self.is_random4)
         a2 = Action('스컬 한테 가기', self.move_to_skul)
 
         root = chase_skul = Sequence('스컬 한테 가기', c2, a2)
@@ -188,7 +216,7 @@ class Adventurer_hero:
 
         root = EnergyBall_to_skul = Sequence('에너지볼 스컬한테 발사', c4, a4)
 
-        root = intro_and_chase = Selector('인트로하고 추적', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul)
+        root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul)
 
         self.bt = BehaviorTree(root)
         pass
