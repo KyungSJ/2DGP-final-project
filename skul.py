@@ -6,7 +6,7 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDL
 import game_world
 import game_framework
 from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
-    c_down, x_down, z_down
+    c_down, x_down, z_down, jump_out
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -114,11 +114,11 @@ class Jump:
         skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
         # 지면 충돌 처리
 
-        if skul.y < 90:
-            skul.y = 90
+        if skul.y < 122:
+            skul.y = 122
             skul.jump_velocity = 10  # 초기 점프 속도
             skul.jump_frame = 0
-            skul.state_machine.add_event(('TIME_OUT', 0))
+            skul.state_machine.add_event(('JUMP_OUT', 0))
 
         # 애니메이션 프레임 처리
         skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
@@ -342,8 +342,8 @@ class Dash:
         pass
     @staticmethod
     def do(skul):
-        skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+        skul.x += skul.face_dir * 2
+        if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
         pass
     @staticmethod
@@ -364,8 +364,8 @@ class Run_dash:
         pass
     @staticmethod
     def do(skul):
-        skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+        skul.x += skul.face_dir * 2
+        if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
         pass
     @staticmethod
@@ -388,8 +388,8 @@ class Jump_Dash:
 
     @staticmethod
     def do(skul):
-        skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+        skul.x += skul.face_dir * 2
+        if (skul.x - skul.init_x) * skul.face_dir >= 180:
             if skul.jump_velocity > 0:
                 skul.jump_velocity = skul.jump_velocity * -1
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -414,8 +414,8 @@ class Jump_move_dash:
 
     @staticmethod
     def do(skul):
-        skul.x += skul.face_dir * 1
-        if (skul.x - skul.init_x) * skul.face_dir >= 84:
+        skul.x += skul.face_dir * 2
+        if (skul.x - skul.init_x) * skul.face_dir >= 180:
             if skul.jump_velocity > 0:
                 skul.jump_velocity = skul.jump_velocity * -1
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -447,11 +447,11 @@ class Air_move:
         skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
         # 지면 충돌 처리
 
-        if skul.y < 90:
-            skul.y = 90
+        if skul.y < 122:
+            skul.y = 122
             skul.jump_velocity = 10  # 초기 점프 속도
             skul.jump_frame = 0
-            skul.state_machine.add_event(('TIME_OUT', 0))
+            skul.state_machine.add_event(('JUMP_OUT', 0))
 
         # 애니메이션 프레임 처리
         skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
@@ -493,7 +493,7 @@ class Skul:
         self.gravity = -0.4  # 중력 가속도
         self.jump_frame = 0  # 점프 애니메이션 초기화
         self.ball = None
-        self.x, self.y = 400, 90
+        self.x, self.y = 400, 120
         self.face_dir = 1
         self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
         self.image = load_image('기본 해골 스프라이트.png')
@@ -503,8 +503,8 @@ class Skul:
             {
                 Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash},
                 Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Air_move, x_down: Run_attack, z_down: Run_dash},
-                Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, time_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
-                Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, time_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack},
+                Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, jump_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
+                Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, jump_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack},
                 Attack: {time_out: Idle},
                 Run_attack: {time_out: Run},
                 Jump_attack: {time_out: Jump},
@@ -527,7 +527,7 @@ class Skul:
     def draw(self):
         self.state_machine.draw()
         # 충돌 영역 그리기
-        draw_rectangle(*self.get_bb())
+       #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         # 네개의 값을 리턴하는데, 사실 한개의 튜플
@@ -544,8 +544,7 @@ class Skul:
 
     def handle_collision(self, group, other):
         # fill here
-        if group == 'boy:ball':
-            self.ball_count += 1
-        if group == 'boy:zombie':
-            game_framework.quit()
+        if group == 'skul:stage1_tile':
+            self.y = 122
+            self.state_machine.add_event(('JUMP_OUT', 0))
         pass

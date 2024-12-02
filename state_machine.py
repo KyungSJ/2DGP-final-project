@@ -34,7 +34,8 @@ def space_down(e):
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
-
+def jump_out(e):
+    return e[0] == 'JUMP_OUT'
 
 
 

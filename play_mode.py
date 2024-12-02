@@ -4,9 +4,11 @@ from pico2d import *
 import game_framework
 
 import game_world
-from stage import Stage
+from adventurer_hero import Adventurer_hero
+from stage1 import Stage1
 from skul import Skul
-
+from stage1_tile_1 import Stage1_Tile1
+from stage1_tile_2 import Stage1_Tile2
 
 
 # boy = None
@@ -24,11 +26,24 @@ def handle_events():
 def init():
     global skul
 
-    stage = Stage()
-    game_world.add_object(stage, 0)
+    stage1 = Stage1()
+    game_world.add_object(stage1, 0)
+
+    stage1_tile1 = [Stage1_Tile1(x * 64, 64) for x in range(0, 29)]
+    for tile in stage1_tile1:
+        game_world.add_object(tile, 1)
+        game_world.add_collision_pair('skul:stage1_tile', None, tile)
+
+    stage1_tile2 = [Stage1_Tile2(x * 64, 0) for x in range(0, 29)]
+    for tile in stage1_tile2:
+        game_world.add_object(tile, 1)
 
     skul = Skul()
-    game_world.add_object(skul, 1)
+    game_world.add_object(skul, 2)
+    game_world.add_collision_pair('skul:stage1_tile', skul, None)
+
+    adventurer_hero = Adventurer_hero(800, 148)
+    game_world.add_object(adventurer_hero, 2)
 
 def finish():
     game_world.clear()

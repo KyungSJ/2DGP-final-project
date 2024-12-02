@@ -1,0 +1,1 @@
+, 'Intro', 'Dead', 'AttackA_Ready', 'AttackA', 'AttackB', 'AttackC', 'AttackD', 'Explosion_Ready', 'Explosion_Loop', 'Potion'
