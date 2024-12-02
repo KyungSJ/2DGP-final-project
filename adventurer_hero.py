@@ -4,7 +4,9 @@ import random
 from pico2d import load_image, draw_rectangle
 
 import game_framework
+import game_world
 import play_mode
+from EnergyBall import EnergyBall
 from behavior_tree import BehaviorTree, Condition, Sequence, Action, Selector
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -21,8 +23,9 @@ WALK_FRAMES_PER_ACTION = 5.0
 ATTACK_FRAMES_PER_ACTION = 10.0
 INTRO_FRAMES_PER_ACTION = 10.0
 ENERGYBALL_FRAMES_PER_ACTION = 15.0
+EXPLOSION_LOOP_FRAMES_PER_ACTION = 15.0
 
-animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall']
+animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall', 'Explosion_Loop']
 
 class Adventurer_hero:
     images = None
@@ -41,6 +44,8 @@ class Adventurer_hero:
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 35)]
                 elif name == 'EnergyBall':
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 15)]
+                elif name == 'Explosion_Loop':
+                    Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 9)]
 
 
 
@@ -93,6 +98,12 @@ class Adventurer_hero:
         elif self.state == 'EnergyBall':
             self.frame += ENERGYBALL_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
             if int(self.frame) >= 15:
+                self.state = 'Idle'
+                self.frame = 0
+                self.random = random.randint(1, 4)
+        elif self.state == 'Explosion_Loop':
+            self.frame += EXPLOSION_LOOP_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+            if int(self.frame) >= 9:
                 self.state = 'Idle'
                 self.frame = 0
                 self.random = random.randint(1, 4)
@@ -185,15 +196,20 @@ class Adventurer_hero:
 
     def Energy_ball(self):
         if self.state != 'EnergyBall':  # 중복 실행 방지
+            energyball = EnergyBall(self.x + 10 * math.cos(self.dir), self.y)
+            game_world.add_object(energyball, 2)
             self.state = 'EnergyBall'
             self.frame = 0  # 애니메이션 초기화
         return BehaviorTree.SUCCESS
-        #energyball = EnergyBall(self.x, self.y, self.dir*10)
         pass
 
-    def random_value_4(self):
-        self.random = 4
-        return BehaviorTree.FAIL
+    def do_Energy_blast(self):
+        if self.state != 'EnergyBlast':
+            self.state = 'EnergyBlast'
+            self.frame = 0
+        pass
+
+
 
     def build_behavior_tree(self):
         c1 = Condition('Intro를 안했는가?', self.is_Intro_do)
@@ -215,6 +231,9 @@ class Adventurer_hero:
         a4 = Action('에니지 볼', self.Energy_ball)
 
         root = EnergyBall_to_skul = Sequence('에너지볼 스컬한테 발사', c4, a4)
+
+        c5 = Condition('랜덤값이 3 인가?', self.is_random3)
+        a5 = Action('기폭발', self.do_Energy_blast)
 
         root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul)
 
