@@ -28,7 +28,7 @@ class EnergyBall:
         self.x += distance * math.cos(self.dir)
         self.y += distance * math.sin(self.dir)
         self.frame += Energyball_FRAME_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
-        if int(self.frame) >= 47:
+        if int(self.frame) >= 48:
             game_world.remove_object(self)
 
         pass

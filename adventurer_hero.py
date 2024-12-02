@@ -7,6 +7,7 @@ import game_framework
 import game_world
 import play_mode
 from EnergyBall import EnergyBall
+from EnergyBlast import EnergyBlast
 from behavior_tree import BehaviorTree, Condition, Sequence, Action, Selector
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -21,9 +22,9 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 IDLE_FRAMES_PER_ACTION = 6.0
 WALK_FRAMES_PER_ACTION = 5.0
 ATTACK_FRAMES_PER_ACTION = 10.0
-INTRO_FRAMES_PER_ACTION = 10.0
+INTRO_FRAMES_PER_ACTION = 8.0
 ENERGYBALL_FRAMES_PER_ACTION = 15.0
-EXPLOSION_LOOP_FRAMES_PER_ACTION = 3.0
+EXPLOSION_LOOP_FRAMES_PER_ACTION = 1.0
 
 animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall', 'Explosion_Loop']
 
@@ -59,6 +60,7 @@ class Adventurer_hero:
         self.frame = 0
         self.state = "Idle"
         self.intro = False
+        self.explosion = True
         self.random = 3
 
         self.build_behavior_tree()
@@ -103,9 +105,15 @@ class Adventurer_hero:
                 self.random = random.randint(1, 4)
         elif self.state == 'Explosion_Loop':
             self.frame += EXPLOSION_LOOP_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+            if int(self.frame) == 2:
+                if self.explosion:
+                    energyblast = EnergyBlast(self.x - 20, self.y + 30)
+                    game_world.add_object(energyblast, 2)
+                    self.explosion = False
             if int(self.frame) >= 9:
                 self.state = 'Idle'
                 self.frame = 0
+                self.explosion = True
                 self.random = random.randint(1, 4)
         self.bt.run()
 
@@ -211,7 +219,6 @@ class Adventurer_hero:
 
     def do_Energy_blast(self):
         if self.state != 'Explosion_Loop':
-
             self.state = 'Explosion_Loop'
             self.frame = 0
         pass
