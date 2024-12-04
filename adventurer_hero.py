@@ -48,12 +48,10 @@ class Adventurer_hero:
                 elif name == 'Explosion_Loop':
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 9)]
 
-
-
-
     def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
+        self.hp = 200
         self.load_images()
         self.dir = 180.0
         self.speed = 0.0
@@ -62,14 +60,18 @@ class Adventurer_hero:
         self.intro = False
         self.explosion = True
         self.random = 3
-        self.hp = 200
+        self.unbeatable = False
         self.healthimage = load_image('AdventurerHealthBar.png')
 
         self.build_behavior_tree()
 
 
     def get_bb(self):
-        return self.x - 36 * 2, self.y - 31 * 2, self.x + 36 * 2, self.y + 31 * 2
+        if not self.unbeatable:
+            return self.x - 36 * 2, self.y - 31 * 2, self.x + 36 * 2, self.y + 31 * 2
+        else:
+            return self.x+20000, self.y+20000, self.x+20000, self.y+20000
+
 
     def get_Attack_bb(self):
         if math.cos(self.dir) < 0:
@@ -87,6 +89,7 @@ class Adventurer_hero:
                 self.state = 'Idle'
                 self.frame = 0
                 self.intro = True
+                self.unbeatable = False
                 print('Intro 끝')
         elif self.state == 'Walk':
             self.frame = (self.frame + WALK_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % WALK_FRAMES_PER_ACTION
@@ -182,6 +185,7 @@ class Adventurer_hero:
 
     def do_Intro(self):
         self.state = 'Intro'
+        self.unbeatable = True
         return BehaviorTree.SUCCESS
 
     def is_random1(self):

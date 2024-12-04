@@ -5,6 +5,7 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDL
 
 import game_world
 import game_framework
+from skulAttack import skulAttack
 from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
     c_down, x_down, z_down, jump_out
 
@@ -156,9 +157,14 @@ class Attack:
     def enter(skul, e):
         skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
         skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
+        skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
+        game_world.add_object(skul.skulattack, 2)
+        game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
+        if skul.skulattack.alive:
+            game_world.remove_object(skul.skulattack)
         pass
 
     @staticmethod
@@ -172,7 +178,6 @@ class Attack:
 
     @staticmethod
     def draw(skul):
-        draw_rectangle(*skul.get_attack_bb())
         # 첫 번째 애니메이션 프레임
         attack1_frames = [
             (5, 950, 34, 46),
@@ -206,9 +211,14 @@ class Run_attack:
     def enter(skul, e):
         skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
         skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
+        skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
+        game_world.add_object(skul.skulattack, 2)
+        game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
+        if skul.skulattack.alive:
+            game_world.remove_object(skul.skulattack)
         pass
 
     @staticmethod
@@ -222,7 +232,6 @@ class Run_attack:
 
     @staticmethod
     def draw(skul):
-        draw_rectangle(*skul.get_attack_bb())
         # 첫 번째 애니메이션 프레임
         attack1_frames = [
             (5, 950, 34, 46),
@@ -255,10 +264,15 @@ class Jump_attack:
     @staticmethod
     def enter(skul, e):
         skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
+        skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
+        game_world.add_object(skul.skulattack, 2)
+        game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
 
 
     @staticmethod
     def exit(skul, e):
+        if skul.skulattack.alive:
+            game_world.remove_object(skul.skulattack)
         pass
 
     @staticmethod
@@ -275,7 +289,6 @@ class Jump_attack:
     @staticmethod
     def draw(skul):
         # 점프 공격 애니메이션 프레임
-        draw_rectangle(*skul.get_attack_bb())
         jump_attack_frames = [
             (5, 812, 33, 42),
             (43, 797, 61, 57),
@@ -296,9 +309,14 @@ class Jump_move_attack:
     @staticmethod
     def enter(skul, e):
         skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
+        skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
+        game_world.add_object(skul.skulattack, 2)
+        game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
+        if skul.skulattack.alive:
+            game_world.remove_object(skul.skulattack)
         pass
 
     @staticmethod
@@ -315,7 +333,6 @@ class Jump_move_attack:
     @staticmethod
     def draw(skul):
         # 점프 공격 애니메이션 프레임
-        draw_rectangle(*skul.get_attack_bb())
         jump_attack_frames = [
             (5, 812, 33, 42),
             (43, 797, 61, 57),

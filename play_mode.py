@@ -25,7 +25,7 @@ def handle_events():
             skul.handle_event(event)
 
 def init():
-    global skul
+    global skul, adventurer_hero
 
     stage1 = Stage1()
     game_world.add_object(stage1, 0)
@@ -80,4 +80,5 @@ def pause():
 
 def resume():
     pass
+
 
