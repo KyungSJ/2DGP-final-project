@@ -32,7 +32,7 @@ class EnergyBlast:
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 140, self.y - 100, self.x + 140, self.y + 60    
+        return self.x - 140, self.y - 100, self.x + 140, self.y + 60
 
     def handle_collision(self, group, other):
         pass

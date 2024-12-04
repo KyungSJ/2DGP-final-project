@@ -4,6 +4,7 @@ from pico2d import *
 import game_framework
 
 import game_world
+from Healthbar import Healthbar
 from adventurer_hero import Adventurer_hero
 from stage1 import Stage1
 from skul import Skul
@@ -28,6 +29,9 @@ def init():
 
     stage1 = Stage1()
     game_world.add_object(stage1, 0)
+    
+    healthbar = Healthbar(900, 799)
+    game_world.add_object(healthbar, 1)
 
     stage1_tile1 = [Stage1_Tile1(x * 64, 64) for x in range(0, 29)]
     for tile in stage1_tile1:
@@ -44,6 +48,7 @@ def init():
 
     adventurer_hero = Adventurer_hero(800, 148)
     game_world.add_object(adventurer_hero, 2)
+    game_world.add_collision_pair('skulAttack:adventurer', None, adventurer_hero)
 
 def finish():
     game_world.clear()

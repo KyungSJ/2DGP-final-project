@@ -11,7 +11,7 @@ from EnergyBlast import EnergyBlast
 from behavior_tree import BehaviorTree, Condition, Sequence, Action, Selector
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
-RUN_SPEED_KMPH = 500.0  # Km / Hour
+RUN_SPEED_KMPH = 300.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -62,6 +62,8 @@ class Adventurer_hero:
         self.intro = False
         self.explosion = True
         self.random = 3
+        self.hp = 200
+        self.healthimage = load_image('AdventurerHealthBar.png')
 
         self.build_behavior_tree()
 
@@ -129,6 +131,8 @@ class Adventurer_hero:
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y + 54, 72 * 2, 116 * 2)
             else:
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y, 72 * 2, 62 * 2)
+        self.healthimage.draw(1192 - (516 / 200 * (200 - self.hp)) / 2, 776, 516 / 200 * self.hp, 44)
+
         #draw_rectangle(*self.get_bb())
         pass
 

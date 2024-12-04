@@ -380,6 +380,8 @@ class Jump_Dash:
     @staticmethod
     def enter(skul, e):
         skul.init_x = skul.x
+        if skul.jump_velocity > 0:
+            skul.jump_velocity = skul.jump_velocity * -1
         pass
 
     @staticmethod
@@ -390,8 +392,6 @@ class Jump_Dash:
     def do(skul):
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
-            if skul.jump_velocity > 0:
-                skul.jump_velocity = skul.jump_velocity * -1
             skul.state_machine.add_event(('TIME_OUT', 0))
         pass
 
@@ -406,6 +406,8 @@ class Jump_move_dash:
     @staticmethod
     def enter(skul, e):
         skul.init_x = skul.x
+        if skul.jump_velocity > 0:
+            skul.jump_velocity = skul.jump_velocity * -1
         pass
 
     @staticmethod
@@ -416,8 +418,6 @@ class Jump_move_dash:
     def do(skul):
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
-            if skul.jump_velocity > 0:
-                skul.jump_velocity = skul.jump_velocity * -1
             skul.state_machine.add_event(('TIME_OUT', 0))
         pass
 
@@ -495,8 +495,10 @@ class Skul:
         self.ball = None
         self.x, self.y = 400, 120
         self.face_dir = 1
+        self.hp = 150
         self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
         self.image = load_image('기본 해골 스프라이트.png')
+        self.healthimage = load_image('Player_HealthBar.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
@@ -505,14 +507,14 @@ class Skul:
                 Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Air_move, x_down: Run_attack, z_down: Run_dash},
                 Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, jump_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
                 Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, jump_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack},
-                Attack: {time_out: Idle},
-                Run_attack: {time_out: Run},
-                Jump_attack: {time_out: Jump},
-                Jump_move_attack: {time_out: Air_move},
-                Dash: {time_out: Idle},
-                Run_dash: {time_out: Run},
-                Jump_Dash: {time_out: Jump},
-                Jump_move_dash: {time_out: Air_move}
+                Attack: {time_out: Idle, left_down: Run, right_down: Run},
+                Run_attack: {time_out: Run, left_up: Idle, right_up: Idle},
+                Jump_attack: {time_out: Jump, left_down: Air_move, right_down: Air_move},
+                Jump_move_attack: {time_out: Air_move, left_up: Jump, right_up: Jump},
+                Dash: {time_out: Idle, left_down: Run, right_down: Run, },
+                Run_dash: {time_out: Run, left_up: Idle, right_up: Idle},
+                Jump_Dash: {time_out: Jump, left_down: Air_move, right_down: Air_move},
+                Jump_move_dash: {time_out: Air_move, left_up: Jump, right_up: Jump}
             }
         )
 
@@ -526,6 +528,7 @@ class Skul:
 
     def draw(self):
         self.state_machine.draw()
+        self.healthimage.draw(608 + (516 / 150 * (150 - self.hp)) / 2, 776, 516 / 150 * self.hp, 44)
         # 충돌 영역 그리기
        #draw_rectangle(*self.get_bb())
 
