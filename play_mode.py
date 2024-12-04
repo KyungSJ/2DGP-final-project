@@ -25,7 +25,7 @@ def handle_events():
             skul.handle_event(event)
 
 def init():
-    global skul, adventurer_hero
+    global skul
 
     stage1 = Stage1()
     game_world.add_object(stage1, 0)
@@ -45,6 +45,9 @@ def init():
     skul = Skul()
     game_world.add_object(skul, 2)
     game_world.add_collision_pair('skul:stage1_tile', skul, None)
+    game_world.add_collision_pair('adventurerAttack:skul', None, skul)
+    game_world.add_collision_pair('Energyball:skul', None, skul)
+    game_world.add_collision_pair('Energyblast:skul', None, skul)
 
     adventurer_hero = Adventurer_hero(800, 148)
     game_world.add_object(adventurer_hero, 2)

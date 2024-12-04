@@ -41,6 +41,9 @@ class EnergyBall:
         return self.x - 17, self.y - 17, self.x + 17, self.y + 17
 
     def handle_collision(self, group, other):
-        # fill here
+        if group == 'Energyball:skul':
+            game_world.remove_object(self)
+        elif group == 'skulAttack:Energyball':
+            game_world.remove_object(self)
 
         pass

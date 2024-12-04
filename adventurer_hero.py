@@ -3,11 +3,15 @@ import random
 
 from pico2d import load_image, draw_rectangle
 
+import adventurerAttack
+import adventurer_hero
 import game_framework
 import game_world
 import play_mode
 from EnergyBall import EnergyBall
 from EnergyBlast import EnergyBlast
+from Energy_blast_attack_range import Energy_blast_attack_range
+from adventurerAttack import adventurerAttack
 from behavior_tree import BehaviorTree, Condition, Sequence, Action, Selector
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -49,6 +53,7 @@ class Adventurer_hero:
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 9)]
 
     def __init__(self, x=None, y=None):
+        self.energy_blast_attack_range = None
         self.x = x
         self.y = y
         self.hp = 200
@@ -62,6 +67,8 @@ class Adventurer_hero:
         self.random = 3
         self.unbeatable = False
         self.healthimage = load_image('AdventurerHealthBar.png')
+        self.recentframe = 0
+        self.recentframe2 = 0
 
         self.build_behavior_tree()
 
@@ -81,6 +88,7 @@ class Adventurer_hero:
 
 
     def update(self):
+        print(self.recentframe2)
         if self.state == 'Idle':
             self.frame = (self.frame + IDLE_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % IDLE_FRAMES_PER_ACTION
         elif self.state == 'Intro':
@@ -94,12 +102,21 @@ class Adventurer_hero:
         elif self.state == 'Walk':
             self.frame = (self.frame + WALK_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % WALK_FRAMES_PER_ACTION
         elif self.state == 'Attack':
+            self.recentframe += 1
+            if self.recentframe == 390 or self.recentframe == 602 or self.recentframe == 780:
+                adventurer_hero.adventurerattack = adventurerAttack(self.x, self.y, self.dir)
+                game_world.add_object(adventurer_hero.adventurerattack, 2)
+                game_world.add_collision_pair('adventurerAttack:skul', adventurer_hero.adventurerattack, None)
+            elif self.recentframe == 426 or self.recentframe == 638 or self.recentframe == 816:
+                if adventurer_hero.adventurerattack.alive:
+                    game_world.remove_object(adventurer_hero.adventurerattack)
             self.frame += ATTACK_FRAMES_PER_ACTION * (ACTION_PER_TIME / 2.0) * game_framework.frame_time
             if int(self.frame) == 11 or int(self.frame) == 17 or int(self.frame) == 22:
                 self.dir = math.atan2(play_mode.skul.y - self.y, play_mode.skul.x - self.x)
                 self.x += 3 * math.cos(self.dir)
             if int(self.frame) >= 35:
                 self.state = 'Idle'
+                self.recentframe = 0
                 self.frame = 0
                 self.random = random.randint(1, 4)
         elif self.state == 'EnergyBall':
@@ -109,12 +126,19 @@ class Adventurer_hero:
                 self.frame = 0
                 self.random = random.randint(1, 4)
         elif self.state == 'Explosion_Loop':
+            self.recentframe2 += 1
             self.frame += EXPLOSION_LOOP_FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
             if int(self.frame) == 2:
                 if self.explosion:
                     energyblast = EnergyBlast(self.x - 20, self.y + 30)
                     game_world.add_object(energyblast, 2)
+                    self.energy_blast_attack_range = Energy_blast_attack_range(self.x - 20, self.y + 30)
+                    game_world.add_object(self.energy_blast_attack_range, 2)
+                    game_world.add_collision_pair('Energyblast:skul', self.energy_blast_attack_range, None)
                     self.explosion = False
+            if self.recentframe2 == 342:
+                if self.energy_blast_attack_range.alive:
+                    game_world.remove_object(self.energy_blast_attack_range)
             if int(self.frame) >= 9:
                 self.state = 'Idle'
                 self.frame = 0
@@ -143,6 +167,8 @@ class Adventurer_hero:
         pass
 
     def handle_collision(self, group, other):
+        if group == 'skulAttack:adventurer':
+            self.hp -= 5
         pass
 
     def distance_less_than(self, x1, y1, x2, y2, r):
@@ -220,6 +246,8 @@ class Adventurer_hero:
         if self.state != 'EnergyBall':  # 중복 실행 방지
             energyball = EnergyBall(self.x + 10 * math.cos(self.dir), self.y)
             game_world.add_object(energyball, 2)
+            game_world.add_collision_pair('Energyball:skul', energyball, None)
+            game_world.add_collision_pair('skulAttack:Energyball', None, energyball)
             self.state = 'EnergyBall'
             self.frame = 0  # 애니메이션 초기화
         return BehaviorTree.SUCCESS

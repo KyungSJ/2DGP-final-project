@@ -26,7 +26,8 @@ class skulAttack:
 
     def handle_collision(self, group, other):
         if group == 'skulAttack:adventurer':
-            play_mode.adventurer_hero.hp -= 5
             self.alive = False
             remove_object(self)
+        elif group == 'skulAttack:Energyball':
+            pass
         pass

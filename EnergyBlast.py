@@ -3,6 +3,7 @@ from pico2d import *
 import game_framework
 import game_world
 import play_mode
+from game_world import remove_object
 
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 EnergyBlast_SPEED_KMPH = 10.0  # Km / Hour
@@ -29,10 +30,11 @@ class EnergyBlast:
 
     def draw(self):
         self.images[int(self.frame)].draw(self.x, self.y, 200 * 2, 145 * 2)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 140, self.y - 100, self.x + 140, self.y + 60
 
     def handle_collision(self, group, other):
+
         pass

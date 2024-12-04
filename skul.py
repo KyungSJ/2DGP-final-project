@@ -160,6 +160,7 @@ class Attack:
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
         game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
+        game_world.add_collision_pair('skulAttack:Energyball', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
@@ -214,6 +215,7 @@ class Run_attack:
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
         game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
+        game_world.add_collision_pair('skulAttack:Energyball', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
@@ -267,6 +269,7 @@ class Jump_attack:
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
         game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
+        game_world.add_collision_pair('skulAttack:Energyball', skul.skulattack, None)
 
 
     @staticmethod
@@ -312,6 +315,7 @@ class Jump_move_attack:
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
         game_world.add_collision_pair('skulAttack:adventurer', skul.skulattack, None)
+        game_world.add_collision_pair('skulAttack:Energyball', skul.skulattack, None)
 
     @staticmethod
     def exit(skul, e):
@@ -567,4 +571,10 @@ class Skul:
         if group == 'skul:stage1_tile':
             self.y = 122
             self.state_machine.add_event(('JUMP_OUT', 0))
+        elif group == 'adventurerAttack:skul':
+            self.hp -= 10
+        elif group == 'Energyball:skul':
+            self.hp -= 5
+        elif group == 'Energyblast:skul':
+            self.hp -= 20
         pass
