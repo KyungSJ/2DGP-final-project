@@ -35,7 +35,7 @@ class EnergyBall:
 
     def draw(self):
         self.images[int(self.frame)].draw(self.x, self.y, 61, 61)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 17, self.y - 17, self.x + 17, self.y + 17

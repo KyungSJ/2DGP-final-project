@@ -15,7 +15,7 @@ class Energy_blast_attack_range:
         pass
 
     def draw(self):
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
         pass
 
     def get_bb(self):

@@ -66,7 +66,7 @@ class Adventurer_hero:
         self.state = "Idle"
         self.intro = False
         self.explosion = True
-        self.random = 3
+        self.random = random.randint(1, 4)
         self.unbeatable = False
         self.healthimage = load_image('AdventurerHealthBar.png')
         self.recentframe = 0
@@ -175,7 +175,7 @@ class Adventurer_hero:
 
     def handle_collision(self, group, other):
         if group == 'skulAttack:adventurer':
-            self.hp -= 5
+            self.hp -= 2
         pass
 
     def distance_less_than(self, x1, y1, x2, y2, r):

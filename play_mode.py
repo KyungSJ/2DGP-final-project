@@ -49,7 +49,7 @@ def init():
     game_world.add_collision_pair('Energyball:skul', None, skul)
     game_world.add_collision_pair('Energyblast:skul', None, skul)
 
-    adventurer_hero = Adventurer_hero(800, 148)
+    adventurer_hero = Adventurer_hero(1700, 148)
     game_world.add_object(adventurer_hero, 2)
     game_world.add_collision_pair('skulAttack:adventurer', None, adventurer_hero)
 

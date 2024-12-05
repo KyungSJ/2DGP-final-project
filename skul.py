@@ -36,9 +36,11 @@ class Idle:
 
     @staticmethod
     def do(skul):
-        skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
         if skul.hp <= 0:
             skul.state_machine.add_event(('HP_OUT', 0))
+
+        skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
+
 
 
     @staticmethod
@@ -75,6 +77,8 @@ class Run:
         pass
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
         skul.x += skul.face_dir * RUN_SPEED_PPS * game_framework.frame_time
@@ -111,6 +115,8 @@ class Jump:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 속도 계산 및 위치 변경
         skul.jump_velocity += skul.gravity * game_framework.frame_time * 50  # 프레임 시간 기반 속도 변화
         skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
@@ -171,6 +177,8 @@ class Attack:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 공격 애니메이션 진행
         skul.attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
 
@@ -226,6 +234,8 @@ class Run_attack:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 공격 애니메이션 진행
         skul.attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
 
@@ -281,6 +291,8 @@ class Jump_attack:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 애니메이션 프레임 진행
         skul.jump_attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
 
@@ -326,6 +338,8 @@ class Jump_move_attack:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 애니메이션 프레임 진행
         skul.jump_attack_frame += FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
 
@@ -364,6 +378,8 @@ class Dash:
         pass
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -386,6 +402,8 @@ class Run_dash:
         pass
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -412,6 +430,8 @@ class Jump_Dash:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -438,6 +458,8 @@ class Jump_move_dash:
 
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         skul.x += skul.face_dir * 2
         if (skul.x - skul.init_x) * skul.face_dir >= 180:
             skul.state_machine.add_event(('TIME_OUT', 0))
@@ -464,6 +486,8 @@ class Air_move:
         pass
     @staticmethod
     def do(skul):
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
         # 속도 계산 및 위치 변경
         skul.jump_velocity += skul.gravity * game_framework.frame_time * 50  # 프레임 시간 기반 속도 변화
         skul.y += skul.jump_velocity * game_framework.frame_time * 50  # 프레임 시간 기반 위치 변화
@@ -513,13 +537,18 @@ class Dead:
     @staticmethod
     def enter(skul, e):
         skul.frame = 0
+        if skul.y > 120:
+            skul.y = 120
         pass
     @staticmethod
     def exit(skul, e):
         pass
     @staticmethod
     def do(skul):
-        skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
+        if skul.frame < 2:
+            skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         pass
     @staticmethod
     def draw(skul):
@@ -536,9 +565,9 @@ class Dead:
 
         # 프레임을 그리기
         if skul.face_dir == 1:
-            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y - 20, w * 2, h * 2)
         else:
-            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y - 20, w * 2, h * 2)
         pass
 
 
@@ -553,7 +582,7 @@ class Skul:
         self.gravity = -0.4  # 중력 가속도
         self.jump_frame = 0  # 점프 애니메이션 초기화
         self.ball = None
-        self.x, self.y = 400, 120
+        self.x, self.y = 100, 120
         self.face_dir = 1
         self.hp = 150
         self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
