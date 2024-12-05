@@ -7,7 +7,7 @@ import game_world
 import game_framework
 from skulAttack import skulAttack
 from state_machine import start_event, right_down, left_up, left_down, right_up, space_down, StateMachine, time_out, \
-    c_down, x_down, z_down, jump_out
+    c_down, x_down, z_down, jump_out, hp_out
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -27,8 +27,6 @@ class Idle:
     def enter(skul, e):
         if start_event(e):
             skul.face_dir = 1
-
-
         skul.frame = 0
         skul.wait_time = get_time()
 
@@ -39,6 +37,9 @@ class Idle:
     @staticmethod
     def do(skul):
         skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
+        if skul.hp <= 0:
+            skul.state_machine.add_event(('HP_OUT', 0))
+
 
     @staticmethod
     def draw(skul):
@@ -508,6 +509,44 @@ class Air_move:
             else:
                 skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
 
+class Dead:
+    @staticmethod
+    def enter(skul, e):
+        skul.frame = 0
+        pass
+    @staticmethod
+    def exit(skul, e):
+        pass
+    @staticmethod
+    def do(skul):
+        skul.frame = (skul.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        pass
+    @staticmethod
+    def draw(skul):
+        # Idle 애니메이션의 각 프레임 좌표와 크기
+        dead_frames = [
+            (5, 703, 41, 28),  # 첫 번째 프레임 (x, y, w, h)
+            (51, 707, 41, 24),  # 두 번째 프레임
+            (97, 710, 41, 21),  # 세 번째 프레임
+        ]
+
+        # 현재 프레임 정보 가져오기
+        frame_index = int(skul.frame) % len(dead_frames)
+        x, y, w, h = dead_frames[frame_index]
+
+        # 프레임을 그리기
+        if skul.face_dir == 1:
+            skul.image.clip_draw(x, y, w, h, skul.x, skul.y, w * 2, h * 2)
+        else:
+            skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y, w * 2, h * 2)
+        pass
+
+
+
+
+
+
+
 class Skul:
     def __init__(self):
         self.jump_velocity = 10  # 초기 점프 속도
@@ -524,18 +563,19 @@ class Skul:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash},
-                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Air_move, x_down: Run_attack, z_down: Run_dash},
-                Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, jump_out: Idle, x_down: Jump_attack, z_down: Jump_Dash},
-                Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, jump_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack},
-                Attack: {time_out: Idle, left_down: Run, right_down: Run},
-                Run_attack: {time_out: Run, left_up: Idle, right_up: Idle},
-                Jump_attack: {time_out: Jump, left_down: Air_move, right_down: Air_move},
-                Jump_move_attack: {time_out: Air_move, left_up: Jump, right_up: Jump},
-                Dash: {time_out: Idle, left_down: Run, right_down: Run, },
-                Run_dash: {time_out: Run, left_up: Idle, right_up: Idle},
-                Jump_Dash: {time_out: Jump, left_down: Air_move, right_down: Air_move},
-                Jump_move_dash: {time_out: Air_move, left_up: Jump, right_up: Jump}
+                Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, c_down: Jump, x_down: Attack, z_down: Dash, hp_out: Dead},
+                Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, c_down: Air_move, x_down: Run_attack, z_down: Run_dash, hp_out: Dead},
+                Jump: {right_down: Air_move, left_down: Air_move, right_up: Air_move, left_up: Air_move, jump_out: Idle, x_down: Jump_attack, z_down: Jump_Dash, hp_out: Dead},
+                Air_move: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump, jump_out: Run, z_down: Jump_move_dash, x_down: Jump_move_attack, hp_out: Dead},
+                Attack: {time_out: Idle, left_down: Run, right_down: Run, hp_out: Dead},
+                Run_attack: {time_out: Run, left_up: Idle, right_up: Idle, hp_out: Dead},
+                Jump_attack: {time_out: Jump, left_down: Air_move, right_down: Air_move, hp_out: Dead},
+                Jump_move_attack: {time_out: Air_move, left_up: Jump, right_up: Jump, hp_out: Dead},
+                Dash: {time_out: Idle, left_down: Run, right_down: Run, hp_out: Dead},
+                Run_dash: {time_out: Run, left_up: Idle, right_up: Idle, hp_out: Dead},
+                Jump_Dash: {time_out: Jump, left_down: Air_move, right_down: Air_move, hp_out: Dead},
+                Jump_move_dash: {time_out: Air_move, left_up: Jump, right_up: Jump, hp_out: Dead},
+                Dead: {}
             }
         )
 

@@ -37,6 +37,9 @@ def time_out(e):
 def jump_out(e):
     return e[0] == 'JUMP_OUT'
 
+def hp_out(e):
+    return e[0] == 'HP_OUT'
+
 
 
 class StateMachine:

@@ -30,7 +30,7 @@ INTRO_FRAMES_PER_ACTION = 8.0
 ENERGYBALL_FRAMES_PER_ACTION = 15.0
 EXPLOSION_LOOP_FRAMES_PER_ACTION = 1.0
 
-animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall', 'Explosion_Loop']
+animation_names = ['Idle', 'Intro', 'Walk', 'Attack', 'EnergyBall', 'Explosion_Loop', 'Dead']
 
 class Adventurer_hero:
     images = None
@@ -51,6 +51,8 @@ class Adventurer_hero:
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 15)]
                 elif name == 'Explosion_Loop':
                     Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 9)]
+                elif name == 'Dead':
+                    Adventurer_hero.images[name] = [load_image("./adventurer_hero/" + name + "_%d" % i + ".png") for i in range(0, 1)]
 
     def __init__(self, x=None, y=None):
         self.energy_blast_attack_range = None
@@ -143,6 +145,7 @@ class Adventurer_hero:
                 self.state = 'Idle'
                 self.frame = 0
                 self.explosion = True
+                self.recentframe2 = 0
                 self.random = random.randint(1, 4)
         self.bt.run()
 
@@ -151,11 +154,15 @@ class Adventurer_hero:
         if math.cos(self.dir) < 0:
             if self.state == 'Explosion_Loop':
                 Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y + 54, 72 * 2, 116 * 2)
+            elif self.state == 'Dead':
+                Adventurer_hero.images[self.state][0].composite_draw(0, 'h', self.x, self.y - 50, 70 * 2, 23 * 2)
             else:
                 Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 72 * 2, 62 * 2)
         else:
             if self.state == 'Explosion_Loop':
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y + 54, 72 * 2, 116 * 2)
+            elif self.state == 'Dead':
+                Adventurer_hero.images[self.state][0].draw(self.x, self.y - 50, 70 * 2, 23 * 2)
             else:
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y, 72 * 2, 62 * 2)
         self.healthimage.draw(1192 - (516 / 200 * (200 - self.hp)) / 2, 776, 516 / 200 * self.hp, 44)
@@ -242,6 +249,12 @@ class Adventurer_hero:
         else:
             return BehaviorTree.FAIL
 
+    def is_died(self):
+        if self.hp <= 0:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
     def Energy_ball(self):
         if self.state != 'EnergyBall':  # 중복 실행 방지
             energyball = EnergyBall(self.x + 10 * math.cos(self.dir), self.y)
@@ -259,7 +272,11 @@ class Adventurer_hero:
             self.frame = 0
         pass
 
-
+    def dead(self):
+        if self.state != 'Dead':
+            self.state = 'Dead'
+            self.random = 0
+        pass
 
     def build_behavior_tree(self):
         c1 = Condition('Intro를 안했는가?', self.is_Intro_do)
@@ -287,7 +304,12 @@ class Adventurer_hero:
 
         root = EnergyBlast_to_skul = Sequence('스컬에게 기폭발', c5, a5)
 
-        root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro, chase_skul, attack_skul, EnergyBall_to_skul, EnergyBlast_to_skul)
+        c6 = Condition('모함가의 체력이 0이하인가?', self.is_died)
+        a6 = Action('죽음', self.dead)
+
+        root = Adventurer_dead = Sequence('모험가의 죽음', c6, a6)
+
+        root = intro_and_chase = Selector('인트로하고 패턴', is_do_intro,Adventurer_dead, chase_skul, attack_skul, EnergyBall_to_skul, EnergyBlast_to_skul)
 
         self.bt = BehaviorTree(root)
         pass
