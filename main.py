@@ -7,5 +7,5 @@ import practice_mode
 import title_mode
 
 open_canvas(1800, 800)
-game_framework.run(play_mode)
+game_framework.run(logo_mode)
 close_canvas()
