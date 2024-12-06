@@ -1,7 +1,7 @@
 import math
 import random
 
-from pico2d import load_image, draw_rectangle
+from pico2d import load_image, draw_rectangle, load_font
 
 import adventurerAttack
 import adventurer_hero
@@ -71,6 +71,7 @@ class Adventurer_hero:
         self.healthimage = load_image('AdventurerHealthBar.png')
         self.recentframe = 0
         self.recentframe2 = 0
+        self.font = load_font('NotoSans-Medium.ttf', 40)
 
         self.build_behavior_tree()
 
@@ -138,7 +139,7 @@ class Adventurer_hero:
                     game_world.add_object(self.energy_blast_attack_range, 2)
                     game_world.add_collision_pair('Energyblast:skul', self.energy_blast_attack_range, None)
                     self.explosion = False
-            if self.recentframe2 == 342:
+            if self.recentframe2 == 350:
                 if self.energy_blast_attack_range.alive:
                     game_world.remove_object(self.energy_blast_attack_range)
             if int(self.frame) >= 9:
@@ -156,6 +157,8 @@ class Adventurer_hero:
                 Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y + 54, 72 * 2, 116 * 2)
             elif self.state == 'Dead':
                 Adventurer_hero.images[self.state][0].composite_draw(0, 'h', self.x, self.y - 50, 70 * 2, 23 * 2)
+                self.font.draw(830, 700, 'You win', (0, 0, 0))
+                self.font.draw(700, 650, 'go practice mode: esc', (0, 0, 0))
             else:
                 Adventurer_hero.images[self.state][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 72 * 2, 62 * 2)
         else:
@@ -163,6 +166,8 @@ class Adventurer_hero:
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y + 54, 72 * 2, 116 * 2)
             elif self.state == 'Dead':
                 Adventurer_hero.images[self.state][0].draw(self.x, self.y - 50, 70 * 2, 23 * 2)
+                self.font.draw(830, 700, 'You win', (0, 0, 0))
+                self.font.draw(700, 650, 'go practice mode: esc', (0, 0, 0))
             else:
                 Adventurer_hero.images[self.state][int(self.frame)].draw(self.x, self.y, 72 * 2, 62 * 2)
         self.healthimage.draw(1192 - (516 / 200 * (200 - self.hp)) / 2, 776, 516 / 200 * self.hp, 44)

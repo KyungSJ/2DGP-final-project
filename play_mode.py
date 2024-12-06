@@ -4,6 +4,7 @@ from pico2d import *
 import game_framework
 
 import game_world
+import practice_mode
 from Healthbar import Healthbar
 from adventurer_hero import Adventurer_hero
 from stage1 import Stage1
@@ -20,7 +21,7 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
+            game_framework.change_mode(practice_mode)
         else:
             skul.handle_event(event)
 
@@ -42,7 +43,7 @@ def init():
     for tile in stage1_tile2:
         game_world.add_object(tile, 1)
 
-    skul = Skul()
+    skul = Skul(True)
     game_world.add_object(skul, 2)
     game_world.add_collision_pair('skul:stage1_tile', skul, None)
     game_world.add_collision_pair('adventurerAttack:skul', None, skul)

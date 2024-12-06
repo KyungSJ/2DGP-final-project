@@ -3,6 +3,7 @@ from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
 import game_framework
 from pico2d import load_image, delay, clear_canvas, update_canvas, get_events, get_time
 
+import play_mode
 import title_mode
 
 

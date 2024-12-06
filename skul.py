@@ -1,7 +1,7 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, load_font, \
-    draw_rectangle
+    draw_rectangle, clamp
 
 import game_world
 import game_framework
@@ -566,8 +566,12 @@ class Dead:
         # 프레임을 그리기
         if skul.face_dir == 1:
             skul.image.clip_draw(x, y, w, h, skul.x, skul.y - 20, w * 2, h * 2)
+            skul.font.draw(830, 700, 'You lose', (0, 0, 0))
+            skul.font.draw(700, 650, 'go practice mode: esc', (0, 0, 0))
         else:
             skul.image.clip_composite_draw(x, y, w, h, 0, 'h', skul.x, skul.y - 20, w * 2, h * 2)
+            skul.font.draw(830, 700, 'You lose', (0, 0, 0))
+            skul.font.draw(700, 650, 'go practice mode: esc', (0, 0, 0))
         pass
 
 
@@ -577,7 +581,7 @@ class Dead:
 
 
 class Skul:
-    def __init__(self):
+    def __init__(self, bar=None):
         self.jump_velocity = 10  # 초기 점프 속도
         self.gravity = -0.4  # 중력 가속도
         self.jump_frame = 0  # 점프 애니메이션 초기화
@@ -585,6 +589,8 @@ class Skul:
         self.x, self.y = 100, 120
         self.face_dir = 1
         self.hp = 150
+        self.bar = bar
+        self.font = load_font('NotoSans-Medium.ttf', 40)
         self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
         self.image = load_image('기본 해골 스프라이트.png')
         self.healthimage = load_image('Player_HealthBar.png')
@@ -610,6 +616,7 @@ class Skul:
 
     def update(self):
         self.state_machine.update()
+        self.x = clamp(0, self.x, 1800)
 
     def handle_event(self, event):
         # 여기서 받을 수 있는 것만 걸러야 함. right left  등등..
@@ -618,7 +625,8 @@ class Skul:
 
     def draw(self):
         self.state_machine.draw()
-        self.healthimage.draw(608 + (516 / 150 * (150 - self.hp)) / 2, 776, 516 / 150 * self.hp, 44)
+        if self.bar:
+            self.healthimage.draw(608 + (516 / 150 * (150 - self.hp)) / 2, 776, 516 / 150 * self.hp, 44)
         # 충돌 영역 그리기
        #draw_rectangle(*self.get_bb())
 
