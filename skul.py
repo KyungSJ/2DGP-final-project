@@ -1,7 +1,7 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, load_font, \
-    draw_rectangle, clamp
+    draw_rectangle, clamp, load_wav
 
 import game_world
 import game_framework
@@ -107,6 +107,11 @@ class Run:
 class Jump:
     @staticmethod
     def enter(skul, e):
+        if not skul.do_jump:
+            skul.jump_sound = load_wav("./audio_clip/" + 'Default_Jump.wav')
+            skul.jump_sound.set_volume(20)
+            skul.jump_sound.play()
+            skul.do_jump = True
         pass
 
     @staticmethod
@@ -127,6 +132,7 @@ class Jump:
             skul.jump_velocity = 10  # 초기 점프 속도
             skul.jump_frame = 0
             skul.state_machine.add_event(('JUMP_OUT', 0))
+            skul.do_jump = False
 
         # 애니메이션 프레임 처리
         skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
@@ -163,6 +169,14 @@ class Attack:
     @staticmethod
     def enter(skul, e):
         skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
+        if skul.attack_animation_set == 1:
+            skul.Attack_sound1 = load_wav("./audio_clip/" + 'Skul_Atk 1.wav')
+            skul.Attack_sound1.set_volume(20)
+            skul.Attack_sound1.play()
+        else:
+            skul.Attack_sound2 = load_wav("./audio_clip/" + 'Skul_Atk 2.wav')
+            skul.Attack_sound2.set_volume(20)
+            skul.Attack_sound2.play()
         skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
@@ -220,6 +234,14 @@ class Run_attack:
     @staticmethod
     def enter(skul, e):
         skul.attack_animation_set = 0 if skul.attack_animation_set == 1 else 1  # 첫 번째와 두 번째 애니메이션 전환
+        if skul.attack_animation_set == 1:
+            skul.Attack_sound1 = load_wav("./audio_clip/" + 'Skul_Atk 1.wav')
+            skul.Attack_sound1.set_volume(20)
+            skul.Attack_sound1.play()
+        else:
+            skul.Attack_sound2 = load_wav("./audio_clip/" + 'Skul_Atk 2.wav')
+            skul.Attack_sound2.set_volume(20)
+            skul.Attack_sound2.play()
         skul.attack_frame = 0  # 공격 애니메이션 프레임 초기화
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
@@ -371,6 +393,9 @@ class Jump_move_attack:
 class Dash:
     @staticmethod
     def enter(skul, e):
+        skul.dash_sound = load_wav("./audio_clip/" + 'Default_Dash.wav')
+        skul.dash_sound.set_volume(20)
+        skul.dash_sound.play()
         skul.init_x = skul.x
         pass
     @staticmethod
@@ -395,6 +420,9 @@ class Dash:
 class Run_dash:
     @staticmethod
     def enter(skul, e):
+        skul.dash_sound = load_wav("./audio_clip/" + 'Default_Dash.wav')
+        skul.dash_sound.set_volume(20)
+        skul.dash_sound.play()
         skul.init_x = skul.x
         pass
     @staticmethod
@@ -419,6 +447,9 @@ class Run_dash:
 class Jump_Dash:
     @staticmethod
     def enter(skul, e):
+        skul.dash_sound = load_wav("./audio_clip/" + 'Default_Dash.wav')
+        skul.dash_sound.set_volume(20)
+        skul.dash_sound.play()
         skul.init_x = skul.x
         if skul.jump_velocity > 0:
             skul.jump_velocity = skul.jump_velocity * -1
@@ -447,6 +478,9 @@ class Jump_Dash:
 class Jump_move_dash:
     @staticmethod
     def enter(skul, e):
+        skul.dash_sound = load_wav("./audio_clip/" + 'Default_Dash.wav')
+        skul.dash_sound.set_volume(20)
+        skul.dash_sound.play()
         skul.init_x = skul.x
         if skul.jump_velocity > 0:
             skul.jump_velocity = skul.jump_velocity * -1
@@ -476,6 +510,11 @@ class Jump_move_dash:
 class Air_move:
     @staticmethod
     def enter(skul, e):
+        if not skul.do_jump:
+            skul.jump_sound = load_wav("./audio_clip/" + 'Default_Jump.wav')
+            skul.jump_sound.set_volume(20)
+            skul.jump_sound.play()
+            skul.do_jump = True
         if right_down(e) or left_up(e): # 오른쪽으로 MOVE
             skul.face_dir = 1
         elif left_down(e) or right_up(e): # 왼쪽으로 MOVE
@@ -498,6 +537,7 @@ class Air_move:
             skul.jump_velocity = 10  # 초기 점프 속도
             skul.jump_frame = 0
             skul.state_machine.add_event(('JUMP_OUT', 0))
+            skul.do_jump = False
 
         # 애니메이션 프레임 처리
         skul.jump_frame = (skul.jump_frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 2
@@ -586,12 +626,13 @@ class Skul:
         self.gravity = -0.4  # 중력 가속도
         self.jump_frame = 0  # 점프 애니메이션 초기화
         self.ball = None
+        self.do_jump = False
         self.x, self.y = 100, 120
         self.face_dir = 1
         self.hp = 150
         self.bar = bar
         self.font = load_font('NotoSans-Medium.ttf', 40)
-        self.attack_animation_set = 0  # 공격 애니메이션 세트 (0 또는 1)
+        self.attack_animation_set = 1  # 공격 애니메이션 세트 (0 또는 1)
         self.image = load_image('기본 해골 스프라이트.png')
         self.healthimage = load_image('Player_HealthBar.png')
         self.state_machine = StateMachine(self)

@@ -73,6 +73,7 @@ class Adventurer_hero:
         self.recentframe2 = 0
         self.font = load_font('NotoSans-Medium.ttf', 40)
 
+
         self.build_behavior_tree()
 
 
