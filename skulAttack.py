@@ -26,8 +26,14 @@ class skulAttack:
 
     def handle_collision(self, group, other):
         if group == 'skulAttack:adventurer':
+            self.hit_sound = load_wav("./audio_clip/" + 'Skul_Hit 3 (b copy) (Unused).wav')
+            self.hit_sound.set_volume(30)
+            self.hit_sound.play()
             self.alive = False
             remove_object(self)
         elif group == 'skulAttack:Energyball':
+            self.hit_sound2 = load_wav("./audio_clip/" + 'Skul_Hit 1 (Unused).wav')
+            self.hit_sound2.set_volume(30)
+            self.hit_sound2.play()
             pass
         pass
