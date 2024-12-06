@@ -16,6 +16,9 @@ Energyball_FRAME_PER_ACTION = 3.0
 
 class EnergyBall:
     def __init__(self, x=None, y=None):
+        self.EB_sound = load_wav("./audio_clip/" + 'AdventurerHero_EnergyBall.wav')
+        self.EB_sound.set_volume(30)
+        self.EB_sound.play()
         self.images = [load_image("./adventurer_hero/" + 'Hero_EnergyBall_Projectile' + "_%d" % i + ".png") for i in range(0, 48)]
         self.frame = 0
         self.dir = 0
@@ -29,7 +32,9 @@ class EnergyBall:
         self.y += distance * math.sin(self.dir)
         self.frame += Energyball_FRAME_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
         if int(self.frame) >= 48:
+
             game_world.remove_object(self)
+
 
         pass
 

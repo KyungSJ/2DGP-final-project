@@ -66,7 +66,7 @@ class Adventurer_hero:
         self.state = "Idle"
         self.intro = False
         self.explosion = True
-        self.random = random.randint(1, 4)
+        self.random = 2
         self.unbeatable = False
         self.healthimage = load_image('AdventurerHealthBar.png')
         self.recentframe = 0

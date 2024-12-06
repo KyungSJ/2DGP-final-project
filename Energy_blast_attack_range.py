@@ -23,7 +23,7 @@ class Energy_blast_attack_range:
 
     def handle_collision(self, group, other):
         if group == 'Energyblast:skul':
-            game_world.remove_object(self)
             self.alive = False
+            game_world.remove_object(self)
             pass
         pass

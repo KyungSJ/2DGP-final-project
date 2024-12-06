@@ -698,6 +698,9 @@ class Skul:
         elif group == 'adventurerAttack:skul':
             self.hp -= 10
         elif group == 'Energyball:skul':
+            self.EB_sound = load_wav("./audio_clip/" + 'AdventurerHero_EnergyBall.wav')
+            self.EB_sound.set_volume(30)
+            self.EB_sound.play()
             self.hp -= 5
         elif group == 'Energyblast:skul':
             self.hp -= 20

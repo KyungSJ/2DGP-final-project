@@ -35,5 +35,8 @@ class skulAttack:
             self.hit_sound2 = load_wav("./audio_clip/" + 'Skul_Hit 1 (Unused).wav')
             self.hit_sound2.set_volume(30)
             self.hit_sound2.play()
+            self.EB_sound3 = load_wav("./audio_clip/" + 'AdventurerHero_EnergyBall.wav')
+            self.EB_sound3.set_volume(30)
+            self.EB_sound3.play()
             pass
         pass
