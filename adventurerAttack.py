@@ -6,6 +6,9 @@ from game_world import remove_object
 
 class adventurerAttack:
     def __init__(self, x=None, y=None, dir=None):
+        self.attack_sound = load_wav("./audio_clip/" + 'AdventurerHero_EndAction_AttackReady.wav')
+        self.attack_sound.set_volume(20)
+        self.attack_sound.play()
         self.x = x
         self.y = y
         self.alive = True
