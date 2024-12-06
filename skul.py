@@ -298,6 +298,9 @@ class Run_attack:
 class Jump_attack:
     @staticmethod
     def enter(skul, e):
+        skul.jump_Atk_sound = load_wav("./audio_clip/" + 'Skul_Jump_Atk.wav')
+        skul.jump_Atk_sound.set_volume(20)
+        skul.jump_Atk_sound.play()
         skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
@@ -346,6 +349,9 @@ class Jump_attack:
 class Jump_move_attack:
     @staticmethod
     def enter(skul, e):
+        skul.jump_Atk_sound = load_wav("./audio_clip/" + 'Skul_Jump_Atk.wav')
+        skul.jump_Atk_sound.set_volume(20)
+        skul.jump_Atk_sound.play()
         skul.jump_attack_frame = 0  # 애니메이션 프레임 초기화
         skul.skulattack = skulAttack(skul.x, skul.y, skul.face_dir)
         game_world.add_object(skul.skulattack, 2)
