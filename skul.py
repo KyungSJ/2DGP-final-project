@@ -582,6 +582,9 @@ class Air_move:
 class Dead:
     @staticmethod
     def enter(skul, e):
+        skul.EB_sound = load_wav("./audio_clip/" + 'Default_Dead.wav')
+        skul.EB_sound.set_volume(30)
+        skul.EB_sound.play()
         skul.frame = 0
         if skul.y > 120:
             skul.y = 120
