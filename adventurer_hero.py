@@ -1,7 +1,7 @@
 import math
 import random
 
-from pico2d import load_image, draw_rectangle, load_font
+from pico2d import load_image, draw_rectangle, load_font, load_wav
 
 import adventurerAttack
 import adventurer_hero
@@ -66,7 +66,7 @@ class Adventurer_hero:
         self.state = "Idle"
         self.intro = False
         self.explosion = True
-        self.random = 2
+        self.random = 3
         self.unbeatable = False
         self.healthimage = load_image('AdventurerHealthBar.png')
         self.recentframe = 0
@@ -274,12 +274,18 @@ class Adventurer_hero:
 
     def do_Energy_blast(self):
         if self.state != 'Explosion_Loop':
+            self.EnergyBlast_sound = load_wav("./audio_clip/" + 'AdventurerHero_EnergyBlast_Charging.wav')
+            self.EnergyBlast_sound.set_volume(30)
+            self.EnergyBlast_sound.play()
             self.state = 'Explosion_Loop'
             self.frame = 0
         pass
 
     def dead(self):
         if self.state != 'Dead':
+            self.dead_sound = load_wav("./audio_clip/" + 'AdventurerHero_Voice_Dead.wav')
+            self.dead_sound.set_volume(30)
+            self.dead_sound.play()
             self.state = 'Dead'
             self.random = 0
         pass
